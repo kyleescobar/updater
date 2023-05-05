@@ -91,15 +91,16 @@ public final class ClassEnvironment implements ClassEnv {
 
 			extractorB.process(nonObfuscatedMemberPatternB);
 			progressReceiver.accept(0.98);
-
+		} catch (InterruptedException | ExecutionException | IOException e) {
 			config.getPathsA().set(0, fileA.toPath());
 			config.getPathsB().set(0, fileB.toPath());
-		} catch (InterruptedException | ExecutionException | IOException e) {
 			throw new RuntimeException(e);
 		} finally {
 			classPathIndex.clear();
 			openFileSystems.forEach(Util::closeSilently);
 			openFileSystems.clear();
+			config.getPathsA().set(0, fileA.toPath());
+			config.getPathsB().set(0, fileB.toPath());
 		}
 
 		progressReceiver.accept(1);

@@ -425,7 +425,11 @@ public class ClassFeatureExtractor implements LocalClassEnv {
 			field.hierarchyData = new MemberHierarchyData<>(Collections.singleton(field), field.nameObfuscatedLocal);
 
 			if (field.writeRefs.size() == 1) {
-				Analysis.checkInitializer(field, this);
+				try {
+					Analysis.checkInitializer(field, this);
+				} catch (Exception e) {
+					continue;
+				}
 			}
 		}
 	}

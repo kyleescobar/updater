@@ -8,3 +8,4 @@ If you need a deobfuscator for OSRS, you can use mine. Its updated as of revisio
 https://github.com/runebox-project/revtools
 
 ## Showcase
+![](https://i.imgur.com/b6l56FI.gif)
