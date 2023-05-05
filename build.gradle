@@ -1,0 +1,159 @@
+plugins {
+	id 'java'
+	id 'application'
+	id 'maven-publish'
+	id "checkstyle"
+	id 'org.openjfx.javafxplugin'
+	id 'com.github.johnrengelman.shadow'
+	id 'org.gradlex.extra-java-module-info'
+    id 'org.jetbrains.kotlin.jvm' version '1.8.20'
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		name "Fabric"
+		url 'https://maven.fabricmc.net/'
+	}
+	maven {
+		name "Quilt"
+		url 'https://maven.quiltmc.org/repository/release/'
+	}
+	google()
+}
+
+archivesBaseName = 'matcher'
+group = 'net.fabricmc'
+
+def ENV = System.getenv()
+
+sourceSets {
+    main {
+        java.srcDirs = ['src']
+		resources.srcDirs = ['res']
+    }
+}
+
+kotlin.sourceSets {
+	jav
+}
+
+checkstyle {
+	configFile = project.file("checkstyle.xml")
+	toolVersion = project.checkstyle_version
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+
+	if (!JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(17)
+		}
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = "UTF-8"
+	it.options.release = 17
+}
+
+javafx {
+	version = javafx_version
+	modules = [ 'javafx.controls', 'javafx.web' ]
+
+	// Don't include native binaries via the plugin,
+	// since it will only include those for the current OS.
+	// The full set of native libraries gets shadowed a few lines beneath.
+	configuration = 'compileOnly'
+}
+
+dependencies {
+	implementation "com.github.javaparser:javaparser-core:${javaparser_version}"
+	implementation "net.fabricmc:cfr:${fabric_cfr_version}"
+	implementation "net.fabricmc:mapping-io:${mappingio_version}"
+	implementation "org.bitbucket.mstrobel:procyon-compilertools:${procyon_version}"
+	implementation "org.quiltmc:quiltflower:${quiltflower_version}"
+	implementation "io.github.skylot:jadx-core:${jadx_version}"
+	implementation "io.github.skylot:jadx-java-input:${jadx_version}"
+	implementation "org.ow2.asm:asm:${asm_version}"
+	implementation "org.ow2.asm:asm-commons:${asm_version}"
+	implementation "org.ow2.asm:asm-tree:${asm_version}"
+	implementation "org.ow2.asm:asm-util:${asm_version}"
+	implementation "com.google.guava:guava:${guava_version}"
+
+	// JavaFX for all platforms (needed for cross-platform fat jar)
+	runtimeOnly "org.openjfx:javafx-base:${javafx_version}:win"
+	runtimeOnly "org.openjfx:javafx-base:${javafx_version}:mac"
+	runtimeOnly "org.openjfx:javafx-base:${javafx_version}:linux"
+	runtimeOnly "org.openjfx:javafx-graphics:${javafx_version}:win"
+	runtimeOnly "org.openjfx:javafx-graphics:${javafx_version}:mac"
+	runtimeOnly "org.openjfx:javafx-graphics:${javafx_version}:linux"
+	runtimeOnly "org.openjfx:javafx-controls:${javafx_version}:win"
+	runtimeOnly "org.openjfx:javafx-controls:${javafx_version}:mac"
+	runtimeOnly "org.openjfx:javafx-controls:${javafx_version}:linux"
+	runtimeOnly "org.openjfx:javafx-web:${javafx_version}:win"
+	runtimeOnly "org.openjfx:javafx-web:${javafx_version}:mac"
+	runtimeOnly "org.openjfx:javafx-web:${javafx_version}:linux"
+	runtimeOnly "org.openjfx:javafx-media:${javafx_version}:win"
+	runtimeOnly "org.openjfx:javafx-media:${javafx_version}:mac"
+	runtimeOnly "org.openjfx:javafx-media:${javafx_version}:linux"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.8.20"
+	implementation files("lib/asm.jar")
+}
+
+extraJavaModuleInfo {
+	automaticModule("cfr-${fabric_cfr_version}.jar", "cfr")
+	automaticModule("procyon-core-${procyon_version}.jar", "procyon.core")
+	automaticModule("procyon-compilertools-${procyon_version}.jar", "procyon.compilertools")
+	automaticModule("quiltflower-${quiltflower_version}.jar", "org.quiltmc.quiltflower")
+	automaticModule("mapping-io-${mappingio_version}.jar", "net.fabricmc.mappingio")
+	failOnMissingModuleInfo.set(false) // because there are transitive dependencies that are not covered yet
+
+	// Mappping IO
+	automaticModule("net.fabricmc:mapping-io", "net.fabricmc.mappingio")
+
+	// CFR
+	automaticModule("net.fabricmc:cfr", "cfr")
+
+	// Fernflower
+	automaticModule("org.quiltmc:quiltflower", "org.quiltmc.quiltflower")
+
+	// Procyon
+	automaticModule("org.bitbucket.mstrobel:procyon-compilertools", "procyon.compilertools")
+
+	// JADX
+	automaticModule("io.github.skylot:jadx-core", "jadx.core")
+	automaticModule("io.github.skylot:jadx-java-input", "jadx.java_input")
+
+	automaticModule("asm.jar", "asm")
+}
+
+application {
+	mainModule = 'matcher'
+	mainClass = 'matcher.Main'
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
+	}
+
+	repositories {
+		mavenLocal()
+
+		if (ENV.MAVEN_URL) {
+			repositories.maven {
+				name "fabric"
+				url ENV.MAVEN_URL
+				credentials {
+					username ENV.MAVEN_USERNAME
+					password ENV.MAVEN_PASSWORD
+				}
+			}
+		}
+	}
+}
