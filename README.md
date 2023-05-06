@@ -7,5 +7,13 @@ It will spit out the new jar version with all of your names from previous one.
 If you need a deobfuscator for OSRS, you can use mine. Its updated as of revision 213.
 https://github.com/runebox-project/revtools
 
+## Added Features
+* Reworked a lot of his ASM backend to support static nodes and decouple them from being considered hierarchy members.
+* Added the ability to directly export a mapped JAR from matches.
+* Reworked the classifiers for static members to not include hierarchy based checks
+* Added support for inlined static methods between inputs so matching score isn't impacted.
+* Added customizable themes via CSS.
+* Reworked the parallel task dispatching to utilize kotlinx coroutine flows.
+
 ## Showcase
 ![](https://i.imgur.com/b6l56FI.gif)
